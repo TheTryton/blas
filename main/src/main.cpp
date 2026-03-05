@@ -110,9 +110,9 @@ void printMatrix(span<ElementType> m, size_t N, size_t M)
 int main()
 {
     using elementType = float;
-    constexpr size_t N = 2048;
-    constexpr size_t M = 2048;
-    constexpr size_t P = 2048;
+    constexpr size_t N = 8192;
+    constexpr size_t M = 8192;
+    constexpr size_t P = 8192;
 
     const auto alpha = static_cast<elementType>(1024.0f);
     const auto beta = static_cast<elementType>(1024.0f);
@@ -121,26 +121,38 @@ int main()
     const auto b = createMatrix<elementType>(M, P, false);
     const auto c = createMatrix<elementType>(N, P, false);
     auto resultCpuTrue = createMatrix<elementType>(N, P, true);
-    auto resultCpuMine = createMatrix<elementType>(N, P, true);
-    auto resultCpuMKL = createMatrix<elementType>(N, P, true);
-    auto resultGpu = createMatrix<elementType>(N, P, true);
+    auto resultGpuOwn = createMatrix<elementType>(N, P, true);
+    auto resultGpuCublas = createMatrix<elementType>(N, P, true);
+    auto resultGpuCublasLt = createMatrix<elementType>(N, P, true);
 
-    const auto cpuTimeTrue = blas::gemm(std::execution::seq, N, M, P, data(resultCpuTrue), alpha, data(a), data(b), beta, data(c));
-    const auto cpuTimeMine = blas::gemm(std::execution::par_unseq, N, M, P, data(resultCpuMine), alpha, data(a), data(b), beta, data(c));
-    const auto cpuTimeMKL = blas::gemm(std::execution::par, N, M, P, data(resultCpuMKL), alpha, data(a), data(b), beta, data(c));
-    const auto gpuTime = blas::gemm(std::execution::par_gpu, N, M, P, data(resultGpu), alpha, data(a), data(b), beta, data(c));
+    //const auto cpuTimeTrue = blas::gemm(std::execution::seq, N, M, P, data(resultCpuTrue), alpha, data(a), data(b), beta, data(c));
+    const auto gpuTimeOwn = blas::gemm(::execution::parallel_gpu::own{}, N, M, P, data(resultGpuOwn), alpha, data(a), data(b), beta, data(c));
+    //const auto gpuTimeCublas = blas::gemm(::execution::parallel_gpu::cublas{}, N, M, P, data(resultGpuCublas), alpha, data(a), data(b), beta, data(c));
+    const auto gpuTimeCublasLt = blas::gemm(::execution::parallel_gpu::cublas_lt{}, N, M, P, data(resultGpuCublasLt), alpha, data(a), data(b), beta, data(c));
 
-    compareMatrices<elementType>(resultCpuTrue, resultCpuMine, N, P);
-    compareMatrices<elementType>(resultCpuTrue, resultCpuMKL, N, P);
-    compareMatrices<elementType>(resultCpuTrue, resultGpu, N, P);
+    /*cout << "Comp True - Own" << endl;
+    compareMatrices<elementType>(resultCpuTrue, resultGpuOwn, N, P);
+    cout << "Comp True - Cublas" << endl;
+    compareMatrices<elementType>(resultCpuTrue, resultGpuCublas, N, P);
+    cout << "Comp True - CublasLt" << endl;
+    compareMatrices<elementType>(resultCpuTrue, resultGpuCublasLt, N, P);
+    cout << "Comp Own - Cublas" << endl;
+    compareMatrices<elementType>(resultGpuOwn, resultGpuCublas, N, P);*/
+    cout << "Comp Own - CublasLt" << endl;
+    compareMatrices<elementType>(resultGpuOwn, resultGpuCublasLt, N, P);
 
     //printMatrix<elementType>(resultCpuTrue, N, P);
-    //printMatrix<elementType>(resultCpuMine, N, P);
+    //printMatrix<elementType>(resultGpuOwn, N, P);
+    //printMatrix<elementType>(resultGpuCublas, N, P);
+    //printMatrix<elementType>(resultGpuCublasLt, N, P);
 
-    cout << format("Time CPU (true): {} ms, {} TFLOPS", cpuTimeTrue.count(), calculateTFLOPS(N, M, P, cpuTimeTrue)) << endl;
-    cout << format("Time CPU (mine): {} ms, {} TFLOPS", cpuTimeMine.count(), calculateTFLOPS(N, M, P, cpuTimeMine)) << endl;
-    cout << format("Time CPU (mkl): {} ms, {} TFLOPS", cpuTimeMKL.count(), calculateTFLOPS(N, M, P, cpuTimeMKL)) << endl;
-    cout << format("Time GPU (cublas): {} ms, {} TFLOPS", gpuTime.count(), calculateTFLOPS(N, M, P, gpuTime)) << endl;
+    //cout << format("Time CPU (true): {} ms, {} TFLOPS", cpuTimeTrue.count(), calculateTFLOPS(N, M, P, cpuTimeTrue)) << endl;
+    //cout << format("Time CPU (mine): {} ms, {} TFLOPS", cpuTimeMine.count(), calculateTFLOPS(N, M, P, cpuTimeMine)) << endl;
+    //cout << format("Time CPU (mkl): {} ms, {} TFLOPS", cpuTimeMKL.count(), calculateTFLOPS(N, M, P, cpuTimeMKL)) << endl;
+    //cout << format("Time CPU (true): {} ms, {} TFLOPS", cpuTimeTrue.count(), calculateTFLOPS(N, M, P, cpuTimeTrue)) << endl;
+    cout << format("Time GPU (own): {} ms, {} TFLOPS", gpuTimeOwn.count(), calculateTFLOPS(N, M, P, gpuTimeOwn)) << endl;
+   // cout << format("Time GPU (cublas): {} ms, {} TFLOPS", gpuTimeCublas.count(), calculateTFLOPS(N, M, P, gpuTimeCublas)) << endl;
+    cout << format("Time GPU (cublas_lt): {} ms, {} TFLOPS", gpuTimeCublasLt.count(), calculateTFLOPS(N, M, P, gpuTimeCublasLt)) << endl;
 
     return 0;
 }

@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-
-enable_language(CUDA)
-set(CMAKE_CUDA_ARCHITECTURES 70)
+project(blas_gpu LANGUAGES CXX CUDA)
 
 find_package(CUDAToolkit REQUIRED)
 

@@ -4,21 +4,16 @@
 
 #include <execution>
 
-namespace std
-{
 namespace execution
 {
-class parallel_gpu
+
+struct parallel_gpu
 {
+    struct cublas {};
+    struct cublas_lt {};
+    struct own {};
 };
 
 inline constexpr parallel_gpu par_gpu{};
-}
-
-template<>
-struct is_execution_policy<execution::parallel_gpu>
-{
-    constexpr static bool value = true;
-};
 
 }

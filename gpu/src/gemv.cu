@@ -6,7 +6,7 @@ namespace blas
 {
 
 milliseconds
-gemv(const std::execution::parallel_gpu &,
+gemv(const execution::parallel_gpu::cublas_lt &,
      size_t N, size_t M,
      float * result,
      float alpha, const float * a, const float * x,

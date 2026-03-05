@@ -1,6 +1,6 @@
 #include <cpu/gemm.hpp>
 
-#include <mkl.h>
+//#include <mkl.h>
 
 #include <algorithm>
 #include <thread>
@@ -17,7 +17,7 @@ gemm(const std::execution::sequenced_policy &,
 {
     const auto start = std::chrono::high_resolution_clock::now();
 
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (size_t row = 0; row < N; ++row) {
         for (size_t column = 0; column < P; ++column) {
             float sum = 0.0f;
@@ -44,7 +44,7 @@ gemm(const std::execution::sequenced_policy &,
     return std::chrono::duration_cast<milliseconds>(stop - start);
 }
 
-milliseconds
+/*milliseconds
 gemm(
     const std::execution::parallel_policy &,
     size_t N, size_t M, size_t P,
@@ -62,7 +62,7 @@ gemm(
     const auto stop = std::chrono::high_resolution_clock::now();
 
     return std::chrono::duration_cast<milliseconds>(stop - start);
-}
+}*/
 
 }
 
